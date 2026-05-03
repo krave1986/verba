@@ -1,0 +1,90 @@
+{
+    "name": "verba",
+    "displayName": "verba",
+    "description": "NDY",
+    "version": "0.0.1",
+    "type": "module",
+    "engines": {
+        "vscode": "^1.116.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./src/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "Verba",
+            "properties": {
+                "verba.include": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "**/*"
+                    ],
+                    "description": "Glob patterns for files to show in the file selector."
+                },
+                "verba.exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "**/.git/",
+                        "**/node_modules/",
+                        "**/dist/",
+                        "**/build/",
+                        "**/.vscode/",
+                        "**/*.vsix"
+                    ],
+                    "description": "Glob patterns for files to hide from the file selector."
+                },
+                "verba.collapse": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "Glob patterns for directories to collapse by default."
+                }
+            }
+        },
+        "views": {
+            "verba-panel": [
+                {
+                    "id": "verba.fileSelector",
+                    "name": "File Selector",
+                    "type": "tree",
+                    "icon": "assets/panel-icon.svg"
+                }
+            ]
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "verba-panel",
+                    "title": "Verba",
+                    "icon": "assets/panel-icon.svg"
+                }
+            ]
+        },
+        "commands": []
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "pretest": "npm run lint",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "22.x",
+        "@types/vscode": "^1.116.0",
+        "@vscode/test-electron": "^2.5.2",
+        "eslint": "^9.39.3"
+    },
+    "dependencies": {
+        "picomatch": "^4.0.4"
+    }
+}
