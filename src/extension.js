@@ -11,10 +11,17 @@ import { FileSelectorProvider } from "./fileSelector.js";
  */
 export function activate(context) {
     console.log('Congratulations, your extension "verba" is now active!');
-    vscode.window.registerTreeDataProvider(
-        "verba.fileSelector",
-        new FileSelectorProvider(),
-    );
+    const provider = new FileSelectorProvider();
+    const treeView = vscode.window.createTreeView("verba.fileSelector", {
+        treeDataProvider: provider,
+        manageCheckboxStateManually: true,
+    });
+    treeView.onDidChangeCheckboxState((event) => {
+        for (const [node, state] of event.items) {
+            node.checked = state === vscode.TreeItemCheckboxState.Checked;
+            provider.refresh(node);
+        }
+    });
 }
 
 // This method is called when your extension is deactivated
