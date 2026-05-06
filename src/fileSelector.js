@@ -191,4 +191,15 @@ export class FileSelectorProvider {
     getCheckedUris() {
         return [...this.#checkedUris];
     }
+
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    #refreshTimer = null;
+
+    scheduleRefresh() {
+        if (this.#refreshTimer) return;
+        this.#refreshTimer = setTimeout(() => {
+            this.#refreshTimer = null;
+            this.refresh();
+        }, 300);
+    }
 }

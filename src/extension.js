@@ -15,6 +15,29 @@ export function activate(context) {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
     });
+    registerTreeViewEvents(treeView, provider);
+    registerFileWatcher(provider, context);
+    // 把 treeView 加入 context 订阅，以便在插件停用时，
+    // 由 vscode 自动清理，以免造成内存溢出。
+    context.subscriptions.push(treeView);
+}
+
+function registerFileWatcher(provider, context) {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+        const watcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(workspaceFolder, "**/*"),
+            false, // ignoreCreateEvents
+            true, // ignoreChangeEvents
+            false,
+        );
+        watcher.onDidCreate(() => provider.scheduleRefresh());
+        watcher.onDidDelete(() => provider.scheduleRefresh());
+        context.subscriptions.push(watcher);
+    }
+}
+
+function registerTreeViewEvents(treeView, provider) {
     treeView.onDidChangeCheckboxState(async (event) => {
         for (const [entryNode, checkState] of event.items) {
             const checked = checkState === vscode.TreeItemCheckboxState.Checked;
@@ -22,9 +45,14 @@ export function activate(context) {
         }
         provider.refresh();
     });
-    // 把 treeView 加入 context 订阅，以便在插件停用时，
-    // 由 vscode 自动清理，以免造成内存溢出。
-    context.subscriptions.push(treeView);
+    treeView.onDidChangeSelection((event) => {
+        const entry = event.selection[0];
+        if (!entry || entry.type !== vscode.FileType.File) return;
+        vscode.window.showTextDocument(entry.uri, {
+            preview: false,
+            preserveFocus: false,
+        });
+    });
 }
 
 // This method is called when your extension is deactivated
