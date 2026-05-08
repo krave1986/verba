@@ -70,7 +70,13 @@
                 }
             ]
         },
-        "commands": []
+        "commands": [],
+        "keybindings": [
+            {
+                "command": "workbench.view.extension.verba-panel",
+                "key": "shift+alt+v"
+            }
+        ]
     },
     "scripts": {
         "lint": "eslint .",

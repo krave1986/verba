@@ -192,6 +192,15 @@ export class FileSelectorProvider {
         return [...this.#checkedUris];
     }
 
+    hasUri(uriString) {
+        return this.#checkedUris.has(uriString);
+    }
+
+    // 注意，这里是 getter
+    get numberOfCurrentCheckedUris() {
+        return this.#checkedUris.size;
+    }
+
     /** @type {ReturnType<typeof setTimeout> | null} */
     #refreshTimer = null;
 
@@ -201,5 +210,10 @@ export class FileSelectorProvider {
             this.#refreshTimer = null;
             this.refresh();
         }, 300);
+    }
+
+    restoreCheckedUris(uris) {
+        this.#checkedUris = new Set(uris);
+        this.refresh();
     }
 }
