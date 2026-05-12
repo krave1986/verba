@@ -11,7 +11,18 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}"
-			]
+			],
+			"internalConsoleOptions": "openOnSessionStart"
+		},
+		{
+			"name": "Run Current File",
+			"type": "node",
+			"request": "launch",
+			"program": "${file}",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"internalConsoleOptions": "openOnSessionStart"
 		}
 	]
 }

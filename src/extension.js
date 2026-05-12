@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { FileSelectorProvider } from "./fileSelector.js";
+import { saveSnapshot, showSnapshotPicker } from "./checkboxSnapshots.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,7 +20,15 @@ export function activate(context) {
     registerFileWatcher(provider, context);
     // 把 treeView 加入 context 订阅，以便在插件停用时，
     // 由 vscode 自动清理，以免造成内存溢出。
-    context.subscriptions.push(treeView);
+    context.subscriptions.push(
+        treeView,
+        vscode.commands.registerCommand("verba.saveSnapshot", () =>
+            saveSnapshot(context, provider),
+        ),
+        vscode.commands.registerCommand("verba.showSnapshotPicker", () =>
+            showSnapshotPicker(context, provider),
+        ),
+    );
 }
 
 function registerFileWatcher(provider, context) {

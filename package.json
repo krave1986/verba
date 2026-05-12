@@ -48,6 +48,19 @@
                     },
                     "default": [],
                     "description": "Glob patterns for directories to collapse by default."
+                },
+                "verba.locale": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Locale for date/time display. Leave empty to follow VS Code UI language.",
+                    "examples": [
+                        "zh-CN",
+                        "en-US",
+                        "ja-JP",
+                        "ko-KR",
+                        "fr-FR",
+                        "de-DE"
+                    ]
                 }
             }
         },
@@ -70,11 +83,28 @@
                 }
             ]
         },
-        "commands": [],
+        "commands": [
+            {
+                "command": "verba.saveSnapshot",
+                "title": "Verba: Save Snapshot"
+            },
+            {
+                "command": "verba.showSnapshotPicker",
+                "title": "Verba: Show Snapshots"
+            }
+        ],
         "keybindings": [
             {
                 "command": "workbench.view.extension.verba-panel",
                 "key": "shift+alt+v"
+            },
+            {
+                "command": "verba.saveSnapshot",
+                "key": "shift+alt+s"
+            },
+            {
+                "command": "verba.showSnapshotPicker",
+                "key": "shift+alt+p"
             }
         ]
     },
