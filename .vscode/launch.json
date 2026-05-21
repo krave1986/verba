@@ -10,7 +10,12 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+			],
+			"skipFiles": [
+				"<node_internals>/**",
+				"${workspaceFolder}/node_modules/**",
+				"!${workspaceFolder}/src/**"
 			],
 			"internalConsoleOptions": "openOnSessionStart"
 		},

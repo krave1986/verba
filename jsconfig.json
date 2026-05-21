@@ -6,7 +6,10 @@
 		"lib": [
 			"ES2022"
 		],
-		"noImplicitAny": false
+		"noImplicitAny": false,
+		"types": [
+			"vscode"
+		]
 	},
 	"exclude": [
 		"node_modules"

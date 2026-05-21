@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import { FileSelectorProvider } from "./fileSelector.js";
 import { saveSnapshot, showSnapshotPicker } from "./checkboxSnapshots.js";
+import { extractContext } from "./context.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -11,7 +12,7 @@ import { saveSnapshot, showSnapshotPicker } from "./checkboxSnapshots.js";
  * @param {vscode.ExtensionContext} context
  */
 export function activate(context) {
-    const provider = new FileSelectorProvider();
+    const provider = new FileSelectorProvider(context);
     const treeView = vscode.window.createTreeView("verba.fileSelector", {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
@@ -28,6 +29,9 @@ export function activate(context) {
         vscode.commands.registerCommand("verba.showSnapshotPicker", () =>
             showSnapshotPicker(context, provider),
         ),
+        vscode.commands.registerCommand("verba.extractContext", () => {
+            extractContext(provider);
+        }),
     );
 }
 

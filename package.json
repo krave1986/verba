@@ -91,6 +91,10 @@
             {
                 "command": "verba.showSnapshotPicker",
                 "title": "Verba: Show Snapshots"
+            },
+            {
+                "command": "verba.extractContext",
+                "title": "Verba: Extract Context"
             }
         ],
         "keybindings": [
@@ -118,7 +122,9 @@
         "@types/node": "22.x",
         "@types/vscode": "^1.116.0",
         "@vscode/test-electron": "^2.5.2",
-        "eslint": "^9.39.3"
+        "eslint": "^9.39.4",
+        "eslint-config-prettier": "^10.1.8",
+        "prettier": "^3.8.3"
     },
     "dependencies": {
         "picomatch": "^4.0.4"

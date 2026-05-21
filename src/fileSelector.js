@@ -1,8 +1,19 @@
 import picomatch from "picomatch";
 import * as vscode from "vscode";
 import { EntryNode } from "./entryNode.js";
+import { getRootUri } from "./utils/workspace.js";
 
 export class FileSelectorProvider {
+    #context;
+
+    constructor(context) {
+        this.#context = context;
+        // 初始化时，先查一下上次关闭时的勾选状态，
+        // 如果查到，则在初始化时，就直接装入 this.#checkedUris 中
+        this.#checkedUris = new Set(
+            context.workspaceState.get("verba.lastCheckedUris") ?? [],
+        );
+    }
     // 获取针对 Verba 的用户设置
     // include: 作为首要白名单逻辑，先明确哪些文件需要展示
     // exclude: 作为次要黑名单逻辑，表示：需要在白名单的基础上，从白名单中排除哪些文件
@@ -32,7 +43,7 @@ export class FileSelectorProvider {
     }
 
     // 存放被用户勾选的文件 URIs
-    #checkedUris = new Set();
+    #checkedUris;
 
     // 条目打勾
     check(uriString) {
@@ -58,7 +69,7 @@ export class FileSelectorProvider {
 
         // 这里的 rootUri 必然存在，
         // 保证来自 getChildren() 的早返回：`if (!folder) return []`
-        const rootUri = this.#getRootUri();
+        const rootUri = getRootUri();
         // 计算相对于工作区根目录的路径，末尾加 "/" 以匹配目录模式（如 src/time/）
         const relativePath =
             // 这里调用的是字符串的 slice(start) 方法，
@@ -77,11 +88,6 @@ export class FileSelectorProvider {
                 ? vscode.TreeItemCollapsibleState.Collapsed
                 : vscode.TreeItemCollapsibleState.Expanded,
         );
-    }
-
-    #getRootUri() {
-        // @ts-ignore — workspaceFolders 在此处，根据我们的业务逻辑，必然存在
-        return vscode.workspace.workspaceFolders[0].uri;
     }
 
     // 除项目根目录外，这里传入的 entry 参数也都是我们定义的 EntryNode 实例
@@ -179,7 +185,7 @@ export class FileSelectorProvider {
 
     async cascade(uri, entryType, checked) {
         checked ? this.check(uri.toString()) : this.uncheck(uri.toString());
-        const rootUri = this.#getRootUri();
+        const rootUri = getRootUri();
         await Promise.all([
             entryType === vscode.FileType.Directory
                 ? this.#cascadeDownward(uri, checked)
