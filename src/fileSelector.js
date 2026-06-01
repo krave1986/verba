@@ -1,16 +1,18 @@
 import picomatch from "picomatch";
 import * as vscode from "vscode";
-import { EntryNode } from "./entryNode.js";
+import { EntryNode } from "./EntryNode.js";
 import { getRootUri } from "./utils/workspace.js";
+import { ObservableSet } from "./ObservableSet.js";
 
 export class FileSelectorProvider {
     #context;
 
     constructor(context) {
         this.#context = context;
+
         // 初始化时，先查一下上次关闭时的勾选状态，
         // 如果查到，则在初始化时，就直接装入 this.#checkedUris 中
-        this.#checkedUris = new Set(
+        this.#checkedUris = new ObservableSet(
             context.workspaceState.get("verba.lastCheckedUris") ?? [],
         );
     }
@@ -177,7 +179,9 @@ export class FileSelectorProvider {
             );
             allChecked
                 ? this.check(parentUri.toString())
-                : this.uncheck(parentUri.toString());
+                : this.#assertParentUnchecked(parentUri.toString());
+            // 如果上述断言报错，而逻辑没问题，则替换成下面这行代码 ↓
+            // : this.uncheck(parentUri.toString());
             propagateUncheckedUpward = !allChecked;
         }
         await this.#cascadeUpward(parentUri, rootUri, propagateUncheckedUpward);
@@ -187,9 +191,11 @@ export class FileSelectorProvider {
         checked ? this.check(uri.toString()) : this.uncheck(uri.toString());
         const rootUri = getRootUri();
         await Promise.all([
+            // 向下级联
             entryType === vscode.FileType.Directory
                 ? this.#cascadeDownward(uri, checked)
                 : Promise.resolve(),
+            // 向上级联
             this.#cascadeUpward(uri, rootUri, !checked),
         ]);
     }
@@ -219,7 +225,32 @@ export class FileSelectorProvider {
     }
 
     restoreCheckedUris(uris) {
-        this.#checkedUris = new Set(uris);
+        this.#checkedUris.replaceAll(uris);
         this.refresh();
+    }
+
+    // 这是一个仅在开发期生效的检查。
+    //
+    // 背景：在 #cascadeUpward 里，当用户勾选了某个子节点、向上冒泡到父目录时，
+    // 如果父目录的子节点并没有全部勾选，那么父目录本身就应该是未勾选状态。
+    // 经过分析，正常情况下走到这里时，父目录必然已经是未勾选的，
+    // 所以这里其实不需要再做任何事（原本的 this.uncheck(parentUri.toString()) 是多余的）。
+    //
+    // 但这个"必然"是基于当前级联逻辑推导出来的。万一哪天逻辑改了、
+    // 或者出现了没预料到的调用路径，导致父目录这时候竟然是勾选状态，
+    // 那就说明上面的分析不再成立。为了不让这种错误被悄悄掩盖，
+    // 这里在开发期主动检查：一旦发现父目录处于勾选状态，立即抛出异常，
+    // 让程序停在这一行，方便用断点查看当时的调用栈和状态。
+    //
+    // 仅在开发期（Development）启用，生产环境不会触发，不影响已发布的插件。
+    #assertParentUnchecked(parentUriString) {
+        if (
+            this.#context.extensionMode === vscode.ExtensionMode.Development &&
+            this.#checkedUris.has(parentUriString)
+        ) {
+            throw new Error(
+                `父目录本应是未勾选状态，但实际发现它已被勾选: ${parentUriString}`,
+            );
+        }
     }
 }

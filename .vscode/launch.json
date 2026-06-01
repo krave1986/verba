@@ -15,7 +15,8 @@
 			"skipFiles": [
 				"<node_internals>/**",
 				"${workspaceFolder}/node_modules/**",
-				"!${workspaceFolder}/src/**"
+				"!${workspaceFolder}/src/**",
+				"**/resources/app/out/**"
 			],
 			"internalConsoleOptions": "openOnSessionStart"
 		},

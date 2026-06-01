@@ -26,8 +26,6 @@ export async function extractContext(provider) {
         return finalListString;
     }, contextDelimiters.scope);
 
-    console.log(fileListString);
-
     for (const uri of realUris) {
         const doc = await vscode.workspace.openTextDocument(uri);
         fileListString += `\n${contextDelimiters.fence}${getRelativePath(uri)}\n${doc.getText()}\n${contextDelimiters.fence}\n`;

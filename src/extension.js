@@ -2,8 +2,12 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { FileSelectorProvider } from "./fileSelector.js";
-import { saveSnapshot, showSnapshotPicker } from "./checkboxSnapshots.js";
+import {
+    saveSnapshot,
+    showSnapshotPicker,
+} from "./snapshots/checkboxSelection/explicit.js";
 import { extractContext } from "./context.js";
+import { initWorkspaceStore } from "./utils/workspace.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
