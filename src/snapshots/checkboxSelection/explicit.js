@@ -1,14 +1,15 @@
 import * as vscode from "vscode";
+import { workspaceStore } from "../../utils/workspace.js";
 
 // 勾选快照功能
 const MAX_SNAPSHOTS = 4;
 
 function loadSnapshots(context) {
-    return context.workspaceState.get("verba.snapshots") ?? [[], []];
+    return workspaceStore.get("verba.snapshots") ?? [[], []];
 }
 
 function saveSnapshots(context, snapshots) {
-    context.workspaceState.update("verba.snapshots", snapshots);
+    workspaceStore.update("verba.snapshots", snapshots);
 }
 
 export async function saveSnapshot(context, provider) {

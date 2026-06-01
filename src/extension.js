@@ -16,6 +16,9 @@ import { initWorkspaceStore } from "./utils/workspace.js";
  * @param {vscode.ExtensionContext} context
  */
 export function activate(context) {
+    // 必须最先调用：注入 workspaceState，后续所有 workspaceStore.* 才可用
+    initWorkspaceStore(context);
+
     const provider = new FileSelectorProvider(context);
     const treeView = vscode.window.createTreeView("verba.fileSelector", {
         treeDataProvider: provider,

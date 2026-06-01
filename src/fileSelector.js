@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { EntryNode } from "./EntryNode.js";
 import { getRootUri } from "./utils/workspace.js";
 import { ObservableSet } from "./ObservableSet.js";
+import { workspaceStore } from "./utils/workspace.js";
 
 export class FileSelectorProvider {
     #context;
@@ -13,7 +14,7 @@ export class FileSelectorProvider {
         // 初始化时，先查一下上次关闭时的勾选状态，
         // 如果查到，则在初始化时，就直接装入 this.#checkedUris 中
         this.#checkedUris = new ObservableSet(
-            context.workspaceState.get("verba.lastCheckedUris") ?? [],
+            workspaceStore.get("verba.lastCheckedUris") ?? [],
         );
     }
     // 获取针对 Verba 的用户设置
