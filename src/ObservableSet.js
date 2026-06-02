@@ -21,25 +21,25 @@ export class ObservableSet extends Set {
 
     add(value) {
         super.add(value);
-        this.#subject.next(this);
+        this.#subject.next([...this]);
         return this;
     }
 
     delete(value) {
         const result = super.delete(value);
-        this.#subject.next(this);
+        this.#subject.next([...this]);
         return result;
     }
 
     clear() {
         super.clear();
-        this.#subject.next(this);
+        this.#subject.next([...this]);
     }
 
     // 整体替换：清空 + 批量加 + 一次通知
     replaceAll(iterable) {
         super.clear();
         for (const item of iterable) super.add(item);
-        this.#subject.next(this);
+        this.#subject.next([...this]);
     }
 }

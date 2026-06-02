@@ -48,6 +48,13 @@ export class FileSelectorProvider {
     // 存放被用户勾选的文件 URIs
     #checkedUris;
 
+    /**
+     * 对外暴露的流：持续推送当前被选中的 URI 数组快照
+     */
+    get uriSelection$() {
+        return this.#checkedUris.changes$;
+    }
+
     // 条目打勾
     check(uriString) {
         this.#checkedUris.add(uriString);

@@ -8,6 +8,7 @@ import {
 } from "./snapshots/checkboxSelection/explicit.js";
 import { extractContext } from "./context.js";
 import { initWorkspaceStore } from "./utils/workspace.js";
+import { autoPersistCheckedUrisOnChange } from "./snapshots/checkboxSelection/implicit.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -30,6 +31,7 @@ export function activate(context) {
     // 由 vscode 自动清理，以免造成内存溢出。
     context.subscriptions.push(
         treeView,
+        autoPersistCheckedUrisOnChange(provider.uriSelection$),
         vscode.commands.registerCommand("verba.saveSnapshot", () =>
             saveSnapshot(context, provider),
         ),

@@ -4,11 +4,11 @@ import { workspaceStore } from "../../utils/workspace.js";
 // 勾选快照功能
 const MAX_SNAPSHOTS = 4;
 
-function loadSnapshots(context) {
+function loadSnapshots() {
     return workspaceStore.get("verba.snapshots") ?? [[], []];
 }
 
-function saveSnapshots(context, snapshots) {
+function saveSnapshots(snapshots) {
     workspaceStore.update("verba.snapshots", snapshots);
 }
 
@@ -16,7 +16,7 @@ export async function saveSnapshot(context, provider) {
     // 如果当下 treeview 中，没有文件被勾选，则直接 return
     if (provider.numberOfCurrentCheckedUris === 0) return;
     // 加载当前存档过的快照
-    const snapshots = loadSnapshots(context) ?? [[], []];
+    const snapshots = loadSnapshots() ?? [[], []];
     // 获取所有已置顶快照
     const pinned = snapshots[0];
 
@@ -25,7 +25,7 @@ export async function saveSnapshot(context, provider) {
         // 大于的话，之后会在 quick pick 面板给出提示。
         // 清理掉所有 unpinned 快照，只保留 pinned
         snapshots[1] = [];
-        saveSnapshots(context, snapshots);
+        saveSnapshots(snapshots);
         return;
     }
 
@@ -59,7 +59,7 @@ export async function saveSnapshot(context, provider) {
         snapshots[1].splice(negativeOverflow);
     }
 
-    saveSnapshots(context, snapshots);
+    saveSnapshots(snapshots);
 }
 
 const buildQpItems = (snapshots) =>
@@ -93,7 +93,7 @@ function findMatchingSnapshotIndex(snapshots, provider) {
 
 export function showSnapshotPicker(context, provider) {
     const previousCheckedUris = provider.getCheckedUris();
-    const snapshots = loadSnapshots(context) ?? [[], []];
+    const snapshots = loadSnapshots() ?? [[], []];
     const [pinned] = snapshots;
 
     const qp = vscode.window.createQuickPick();
@@ -155,7 +155,7 @@ export function showSnapshotPicker(context, provider) {
                         }
                     },
                 ) || snapshots[targetGroup].push(snapshot);
-                saveSnapshots(context, snapshots);
+                saveSnapshots(snapshots);
                 qp.items = buildQpItems(snapshots);
                 break;
             }
@@ -171,7 +171,7 @@ export function showSnapshotPicker(context, provider) {
                 });
                 snapshot.name = name;
                 snapshot.description = description ?? snapshot.description;
-                saveSnapshots(context, snapshots);
+                saveSnapshots(snapshots);
                 qp.items = buildQpItems(snapshots);
                 break;
             }
