@@ -4,7 +4,7 @@ import { workspaceStore } from "../../utils/workspace.js";
 // 勾选快照功能
 const MAX_SNAPSHOTS = 4;
 
-function loadSnapshots() {
+export function loadSnapshots() {
     return workspaceStore.get("verba.snapshots") ?? [[], []];
 }
 
@@ -16,7 +16,7 @@ export async function saveSnapshot(context, provider) {
     // 如果当下 treeview 中，没有文件被勾选，则直接 return
     if (provider.numberOfCurrentCheckedUris === 0) return;
     // 加载当前存档过的快照
-    const snapshots = loadSnapshots() ?? [[], []];
+    const snapshots = loadSnapshots();
     // 获取所有已置顶快照
     const pinned = snapshots[0];
 
@@ -32,7 +32,25 @@ export async function saveSnapshot(context, provider) {
     // 判断当前勾选的快照，是否与存档快照中的某一个相同
     const matchingIndex = findMatchingSnapshotIndex(snapshots, provider);
     // 如果存在相同快照，则直接返回
-    if (matchingIndex !== -1) return;
+    if (matchingIndex !== -1) {
+        // 先定位快照的一二级索引
+        const [snapshotLevel1Index, snapshotLevel2Index] =
+            matchingIndex >= snapshots[0].length
+                ? [1, matchingIndex - snapshots[0].length]
+                : [0, matchingIndex];
+        // 根据索引拿到一级快照组
+        const subSnapshots = snapshots[snapshotLevel1Index];
+        // 根据索引拿到快照本照
+        const matchingSnapshot = subSnapshots[snapshotLevel2Index];
+        vscode.window.showInformationMessage(
+            `快照「${matchingSnapshot.name}」已存在。`,
+        );
+        matchingSnapshot.createdAt = new Date().toISOString();
+        // 在一级快照内部，原地修改数组顺序
+        subSnapshots.unshift(subSnapshots.splice(snapshotLevel2Index, 1)[0]);
+        saveSnapshots(snapshots);
+        return;
+    }
 
     // 提示用户输入勾选快照名
     const name = await vscode.window.showInputBox({
@@ -93,7 +111,7 @@ function findMatchingSnapshotIndex(snapshots, provider) {
 
 export function showSnapshotPicker(context, provider) {
     const previousCheckedUris = provider.getCheckedUris();
-    const snapshots = loadSnapshots() ?? [[], []];
+    const snapshots = loadSnapshots();
     const [pinned] = snapshots;
 
     const qp = vscode.window.createQuickPick();

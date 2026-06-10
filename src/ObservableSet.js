@@ -20,6 +20,7 @@ export class ObservableSet extends Set {
     }
 
     add(value) {
+        if (this.has(value)) return this;
         super.add(value);
         this.#subject.next([...this]);
         return this;
@@ -27,11 +28,14 @@ export class ObservableSet extends Set {
 
     delete(value) {
         const result = super.delete(value);
-        this.#subject.next([...this]);
+        if (result) {
+            this.#subject.next([...this]);
+        }
         return result;
     }
 
     clear() {
+        if (this.size === 0) return;
         super.clear();
         this.#subject.next([...this]);
     }

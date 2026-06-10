@@ -3,18 +3,54 @@ import * as vscode from "vscode";
 import { EntryNode } from "./EntryNode.js";
 import { getRootUri } from "./utils/workspace.js";
 import { ObservableSet } from "./ObservableSet.js";
-import { workspaceStore } from "./utils/workspace.js";
+import { loadLastCheckedUris } from "./snapshots/checkboxSelection/implicit.js";
+import { submitGetChildrenUris } from "./utils/getChildrenDrivenUriReconciler.js";
+import { asyncScheduler, Observable, throttleTime } from "rxjs";
+import { toVscodeDisposable } from "./utils/toVscodeDisposable.js";
 
 export class FileSelectorProvider {
     #context;
+    onDidChangeTreeData;
+    /** @type {(node?: any) => void} */
+    refresh = () => {
+        // 这个空函数是占位初始值，真正的实现在构造函数的 Observable 订阅回调里赋值
+    };
+    treeRefreshSubscription;
 
     constructor(context) {
         this.#context = context;
 
         // 初始化时，先查一下上次关闭时的勾选状态，
         // 如果查到，则在初始化时，就直接装入 this.#checkedUris 中
-        this.#checkedUris = new ObservableSet(
-            workspaceStore.get("verba.lastCheckedUris") ?? [],
+        this.#checkedUris = new ObservableSet(loadLastCheckedUris());
+
+        // 1. emitter 完美隐藏在局部变量中
+        const emitter = new vscode.EventEmitter();
+        // 逻辑：vscode 内部定义了这样一个类型的事件，类型为 onDidChangeTreeData ，
+        // 下面的赋值操作，就是在告诉 vscode ：emitter 就是这个类型的事件，
+        // 如果该事件被触发，vscode 知道该如何去内部处理这个类型的事件。
+        this.onDidChangeTreeData = emitter.event;
+
+        // 2. 创建 Observable 并直接订阅
+        this.treeRefreshSubscription = toVscodeDisposable(
+            new Observable((subscriber) => {
+                // 修复 this 丢失问题，安全地将 next 暴露给外部
+                this.refresh = (node) => subscriber.next(node);
+
+                // 符合 RxJS 规范，返回一个空的 teardown 函数
+                return () => {};
+            })
+                .pipe(
+                    // 明确使用 asyncScheduler 代替 undefined
+                    throttleTime(100, asyncScheduler, {
+                        leading: false,
+                        trailing: true,
+                    }),
+                )
+                .subscribe({
+                    // 我们需要做的，就是去根据一定的机制去触发这个事件。
+                    next: (node) => emitter.fire(node),
+                }),
         );
     }
     // 获取针对 Verba 的用户设置
@@ -122,17 +158,19 @@ export class FileSelectorProvider {
             }
             return nameA.localeCompare(nameB);
         });
-        return filtered.map(
-            ([name, type]) =>
-                new EntryNode(vscode.Uri.joinPath(entry.uri, name), type),
+        const { entryNodes, uriStrings } = filtered.reduce(
+            (acc, [name, type]) => {
+                const entryUri = vscode.Uri.joinPath(entry.uri, name);
+                const node = new EntryNode(entryUri, type);
+                acc.entryNodes.push(node);
+                acc.uriStrings.push(entryUri.toString());
+                return acc;
+            },
+            { entryNodes: [], uriStrings: [] },
         );
+        submitGetChildrenUris(uriStrings);
+        return entryNodes;
     }
-
-    #emitter = new vscode.EventEmitter();
-    // 逻辑：vscode 内部定义了这样一个类型的事件，类型为 onDidChangeTreeData ，
-    // 下面的赋值操作，就是在告诉 vscode ：this.#emitter 就是这个类型的事件，
-    // 如果该事件被触发，vscode 知道该如何去内部处理这个类型的事件。
-    onDidChangeTreeData = this.#emitter.event;
 
     #filterEntries(entries) {
         const { included, excluded } = this.#getConfig();
@@ -150,11 +188,6 @@ export class FileSelectorProvider {
 
     async #readEntries(uri) {
         return vscode.workspace.fs.readDirectory(uri);
-    }
-
-    // 而我们需要做的，就是去根据一定的机制去触发这个事件。
-    refresh(node = undefined) {
-        this.#emitter.fire(node);
     }
 
     async #cascadeDownward(uri, checked) {
@@ -221,20 +254,11 @@ export class FileSelectorProvider {
         return this.#checkedUris.size;
     }
 
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    #refreshTimer = null;
-
-    scheduleRefresh() {
-        if (this.#refreshTimer) return;
-        this.#refreshTimer = setTimeout(() => {
-            this.#refreshTimer = null;
-            this.refresh();
-        }, 300);
-    }
-
-    restoreCheckedUris(uris) {
+    restoreCheckedUris(uris, { shouldRefresh = true } = {}) {
         this.#checkedUris.replaceAll(uris);
-        this.refresh();
+        if (shouldRefresh) {
+            this.refresh();
+        }
     }
 
     // 这是一个仅在开发期生效的检查。

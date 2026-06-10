@@ -9,6 +9,10 @@ import {
 import { extractContext } from "./context.js";
 import { initWorkspaceStore } from "./utils/workspace.js";
 import { autoPersistCheckedUrisOnChange } from "./snapshots/checkboxSelection/implicit.js";
+import {
+    activateUriCollection,
+    bindFileSelectorProviderToReconciler,
+} from "./utils/getChildrenDrivenUriReconciler.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -21,6 +25,8 @@ export function activate(context) {
     initWorkspaceStore(context);
 
     const provider = new FileSelectorProvider(context);
+    bindFileSelectorProviderToReconciler(provider);
+    activateUriCollection();
     const treeView = vscode.window.createTreeView("verba.fileSelector", {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
@@ -32,6 +38,7 @@ export function activate(context) {
     context.subscriptions.push(
         treeView,
         autoPersistCheckedUrisOnChange(provider.uriSelection$),
+        provider.treeRefreshSubscription,
         vscode.commands.registerCommand("verba.saveSnapshot", () =>
             saveSnapshot(context, provider),
         ),
@@ -40,6 +47,15 @@ export function activate(context) {
         ),
         vscode.commands.registerCommand("verba.extractContext", () => {
             extractContext(provider);
+        }),
+        vscode.workspace.onDidChangeConfiguration((configChangeEvent) => {
+            if (
+                configChangeEvent.affectsConfiguration("verba.include") ||
+                configChangeEvent.affectsConfiguration("verba.exclude")
+            ) {
+                activateUriCollection();
+                provider.refresh();
+            }
         }),
     );
 }
@@ -53,22 +69,25 @@ function registerFileWatcher(provider, context) {
             true, // ignoreChangeEvents
             false,
         );
-        watcher.onDidCreate(() => provider.scheduleRefresh());
-        watcher.onDidDelete(() => provider.scheduleRefresh());
+        watcher.onDidCreate(() => provider.refresh());
+        watcher.onDidDelete(() => {
+            activateUriCollection();
+            provider.refresh();
+        });
         context.subscriptions.push(watcher);
     }
 }
 
 function registerTreeViewEvents(treeView, provider) {
-    treeView.onDidChangeCheckboxState(async (event) => {
-        for (const [entryNode, checkState] of event.items) {
+    treeView.onDidChangeCheckboxState(async (checkboxStateChangeEvent) => {
+        for (const [entryNode, checkState] of checkboxStateChangeEvent.items) {
             const checked = checkState === vscode.TreeItemCheckboxState.Checked;
             await provider.cascade(entryNode.uri, entryNode.type, checked);
         }
         provider.refresh();
     });
-    treeView.onDidChangeSelection((event) => {
-        const entry = event.selection[0];
+    treeView.onDidChangeSelection((selectionChangeEvent) => {
+        const entry = selectionChangeEvent.selection[0];
         if (!entry || entry.type !== vscode.FileType.File) return;
         vscode.window.showTextDocument(entry.uri, {
             preview: false,

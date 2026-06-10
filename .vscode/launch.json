@@ -12,6 +12,9 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
 			],
+			"env": {
+				"VSCODE_DEV_PROJECT_ROOT": "${workspaceFolder}"
+			},
 			"skipFiles": [
 				"<node_internals>/**",
 				"${workspaceFolder}/node_modules/**",

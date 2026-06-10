@@ -1,6 +1,10 @@
 import { workspaceStore } from "../../utils/workspace.js";
 import { debounceTime } from "rxjs";
-import * as vscode from "vscode";
+import { toVscodeDisposable } from "../../utils/toVscodeDisposable.js";
+
+export function loadLastCheckedUris() {
+    return workspaceStore.get("verba.lastCheckedUris") ?? [];
+}
 
 /**
  * 隐式快照：订阅勾选集合的变化，防抖后自动写入 workspaceState。
@@ -16,9 +20,14 @@ export function autoPersistCheckedUrisOnChange(changes$) {
             workspaceStore.update("verba.lastCheckedUris", checkedUris);
         });
 
-    // 在 subscription 外面封装 vscode 的 Disposable 是为了
-    // 能够在将其 push 进 context.subscriptions 进行优雅善后。
-    return new vscode.Disposable(() => {
-        subscription.unsubscribe();
-    });
+    return toVscodeDisposable(subscription);
+
+    // ─────────────────────────────────────────
+    // 下为原始代码
+    // ─────────────────────────────────────────
+    // // 在 subscription 外面封装 vscode 的 Disposable 是为了
+    // // 能够在将其 push 进 context.subscriptions 进行优雅善后。
+    // return new vscode.Disposable(() => {
+    //     subscription.unsubscribe();
+    // });
 }
