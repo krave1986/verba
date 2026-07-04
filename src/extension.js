@@ -9,10 +9,14 @@ import {
 import { extractContext } from "./context.js";
 import { initWorkspaceStore } from "./utils/workspace.js";
 import { autoPersistCheckedUrisOnChange } from "./snapshots/checkboxSelection/implicit.js";
+import { disposableRegistry } from "./utils/toVscodeDisposable.js";
 import {
-    activateUriCollection,
-    bindFileSelectorProviderToReconciler,
-} from "./utils/getChildrenDrivenUriReconciler.js";
+    asynchronouslyBuildWorkspaceFileTree,
+    synchronouslyBuildWorkspaceFileTree,
+} from "./workspaceFileTree/traverser.js";
+import { bindFileSelectorProviderToReconciler } from "./utils/reconcileWithFileSystem.js";
+import { clearWorkspaceFileTreeCache } from "./workspaceFileTree/cache.js";
+import { EntryNode } from "./EntryNode.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -24,21 +28,22 @@ export function activate(context) {
     // 必须最先调用：注入 workspaceState，后续所有 workspaceStore.* 才可用
     initWorkspaceStore(context);
 
+    // 构建内存中的文件树，并且在构建完毕后，需要将内存文件树与持久化了的 uri 们进行比对
+    synchronouslyBuildWorkspaceFileTree(true);
     const provider = new FileSelectorProvider(context);
     bindFileSelectorProviderToReconciler(provider);
-    activateUriCollection();
     const treeView = vscode.window.createTreeView("verba.fileSelector", {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
     });
     registerTreeViewEvents(treeView, provider);
     registerFileWatcher(provider, context);
+    autoPersistCheckedUrisOnChange(provider.uriSelection$);
     // 把 treeView 加入 context 订阅，以便在插件停用时，
     // 由 vscode 自动清理，以免造成内存溢出。
     context.subscriptions.push(
         treeView,
-        autoPersistCheckedUrisOnChange(provider.uriSelection$),
-        provider.treeRefreshSubscription,
+        ...disposableRegistry.getAll(),
         vscode.commands.registerCommand("verba.saveSnapshot", () =>
             saveSnapshot(context, provider),
         ),
@@ -48,16 +53,44 @@ export function activate(context) {
         vscode.commands.registerCommand("verba.extractContext", () => {
             extractContext(provider);
         }),
+
         vscode.workspace.onDidChangeConfiguration((configChangeEvent) => {
             if (
                 configChangeEvent.affectsConfiguration("verba.include") ||
                 configChangeEvent.affectsConfiguration("verba.exclude")
             ) {
-                activateUriCollection();
-                provider.refresh();
+                clearWorkspaceFileTreeCache();
+                void synchronouslyBuildWorkspaceFileTree(true);
+                provider.refresh({ clearTree: false });
+            }
+            if (configChangeEvent.affectsConfiguration("verba.expand")) {
+                provider.refresh({ clearTree: false });
             }
         }),
     );
+    // 以下为调试时才注入的代码
+    if (context.extensionMode === vscode.ExtensionMode.Development) {
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "verba.temporaryDebug",
+                async () => {
+                    const testUri = vscode.Uri.parse(
+                        "file:///d%3A/vscode-extensions/test-projects/parent_one/branch_one/branch.js",
+                    );
+                    const testNode = new EntryNode(
+                        testUri,
+                        vscode.FileType.File,
+                    );
+                    await treeView.reveal(testNode, {
+                        expand: true,
+                        select: true,
+                        focus: true,
+                    });
+                    console.log("debug结束！");
+                },
+            ),
+        );
+    }
 }
 
 function registerFileWatcher(provider, context) {
@@ -69,10 +102,13 @@ function registerFileWatcher(provider, context) {
             true, // ignoreChangeEvents
             false,
         );
-        watcher.onDidCreate(() => provider.refresh());
+        watcher.onDidCreate(() => {
+            provider.refresh({ clearTree: true });
+            asynchronouslyBuildWorkspaceFileTree();
+        });
         watcher.onDidDelete(() => {
-            activateUriCollection();
-            provider.refresh();
+            provider.refresh({ clearTree: true });
+            asynchronouslyBuildWorkspaceFileTree(true);
         });
         context.subscriptions.push(watcher);
     }
@@ -84,7 +120,7 @@ function registerTreeViewEvents(treeView, provider) {
             const checked = checkState === vscode.TreeItemCheckboxState.Checked;
             await provider.cascade(entryNode.uri, entryNode.type, checked);
         }
-        provider.refresh();
+        provider.refresh({ clearTree: false });
     });
     treeView.onDidChangeSelection((selectionChangeEvent) => {
         const entry = selectionChangeEvent.selection[0];

@@ -1,10 +1,10 @@
 {
 	"compilerOptions": {
-		"module": "Node16",
-		"target": "ES2022",
+		"module": "NodeNext",
+		"target": "es2025",
 		"checkJs": true, /* Typecheck .js files. */
 		"lib": [
-			"ES2022"
+			"ES2025",
 		],
 		"noImplicitAny": false,
 		"types": [

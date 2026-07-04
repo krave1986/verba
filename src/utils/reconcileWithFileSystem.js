@@ -1,10 +1,13 @@
 import { loadSnapshots } from "../snapshots/checkboxSelection/explicit.js";
 import { workspaceStore } from "./workspace.js";
 
-export function reconcileAllCheckedUrisWithFileSystem(
-    collectedValidUris,
-    provider,
-) {
+let fileSelectorProvider = null;
+
+export function bindFileSelectorProviderToReconciler(provider) {
+    fileSelectorProvider = provider;
+}
+
+export function reconcileAllCheckedUrisWithFileSystem(collectedValidUris) {
     // ── 快照：原地修改每个快照的 checkedUris ──
     const snapshots = loadSnapshots();
 
@@ -23,11 +26,13 @@ export function reconcileAllCheckedUrisWithFileSystem(
     }
 
     // ── provider：过滤当前内存中的勾选集合 ──
-    const currentCheckedUris = provider.getCheckedUris();
+    const currentCheckedUris = fileSelectorProvider.getCheckedUris();
     const filteredUris = currentCheckedUris.filter((uri) =>
         collectedValidUris.has(uri),
     );
     if (filteredUris.length !== currentCheckedUris.length) {
-        provider.restoreCheckedUris(filteredUris, { shouldReferesh: false });
+        fileSelectorProvider.restoreCheckedUris(filteredUris, {
+            shouldRefresh: false,
+        });
     }
 }

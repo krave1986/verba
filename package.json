@@ -41,13 +41,13 @@
                     ],
                     "description": "Glob patterns for files to hide from the file selector."
                 },
-                "verba.collapse": {
+                "verba.expand": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
                     "default": [],
-                    "description": "Glob patterns for directories to collapse by default."
+                    "description": "Glob patterns for directories to expand by default. All other directories start collapsed."
                 },
                 "verba.locale": {
                     "type": "string",
@@ -85,6 +85,11 @@
         },
         "commands": [
             {
+                "command": "verba.temporaryDebug",
+                "title": "Verba: Temporary Debug",
+                "enablement": "isDevelopment"
+            },
+            {
                 "command": "verba.saveSnapshot",
                 "title": "Verba: Save Snapshot"
             },
@@ -109,6 +114,11 @@
             {
                 "command": "verba.showSnapshotPicker",
                 "key": "shift+alt+p"
+            },
+            {
+                "command": "verba.temporaryDebug",
+                "key": "shift+alt+d",
+                "when": "isDevelopment"
             }
         ]
     },
