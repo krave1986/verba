@@ -41,14 +41,6 @@
                     ],
                     "description": "Glob patterns for files to hide from the file selector."
                 },
-                "verba.expand": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "default": [],
-                    "description": "Glob patterns for directories to expand by default. All other directories start collapsed."
-                },
                 "verba.locale": {
                     "type": "string",
                     "default": "",

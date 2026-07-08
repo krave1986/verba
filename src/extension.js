@@ -73,9 +73,6 @@ export function activate(context) {
                 void synchronouslyBuildWorkspaceFileTree(true);
                 provider.refresh({ clearTree: false });
             }
-            if (configChangeEvent.affectsConfiguration("verba.expand")) {
-                provider.refresh({ clearTree: false });
-            }
         }),
     );
     // 以下为调试时才注入的代码

@@ -115,12 +115,6 @@ export class FileSelectorProvider {
                     "verba.exclude",
                 ),
             ),
-            expanded: prefixWithGlobstar(
-                warnAndFilterAbsolutePaths(
-                    config.get("expand"),
-                    "verba.expand",
-                ),
-            ),
         };
     }
 
