@@ -11,6 +11,7 @@ import {
     clearWorkspaceFileTreeCache,
     readChildEntries,
 } from "./workspaceFileTree/cache.js";
+import { loadLastExpandedDirectoryUris } from "./utils/expandedDirectoryUris.js";
 
 export class FileSelectorProvider {
     #context;
@@ -29,6 +30,10 @@ export class FileSelectorProvider {
         // 初始化时，先查一下上次关闭时的勾选状态，
         // 如果查到，则在初始化时，就直接装入 this.#checkedUris 中
         this.#checkedUris = new ObservableSet(loadLastCheckedUris());
+
+        this.#currentlyExpandedDirectoryUris = new ObservableSet(
+            loadLastExpandedDirectoryUris(),
+        );
 
         // 1. emitter 完美隐藏在局部变量中
         const emitter = new vscode.EventEmitter();
@@ -137,6 +142,8 @@ export class FileSelectorProvider {
     // 存放被用户勾选的文件 URIs
     #checkedUris;
 
+    #currentlyExpandedDirectoryUris;
+
     /**
      * 对外暴露的流：持续推送当前被选中的 URI 数组快照
      */
@@ -154,6 +161,23 @@ export class FileSelectorProvider {
         this.#checkedUris.delete(uriString);
     }
 
+    /**
+     * 对外暴露的流：持续推送当前展开目录的 URI 数组快照
+     */
+    get expandedDirectoryUriSelection$() {
+        return this.#currentlyExpandedDirectoryUris.changes$;
+    }
+
+    // 记录目录展开
+    recordExpandedDirectory(uriString) {
+        this.#currentlyExpandedDirectoryUris.add(uriString);
+    }
+
+    // 记录目录折叠
+    recordCollapsedDirectory(uriString) {
+        this.#currentlyExpandedDirectoryUris.delete(uriString);
+    }
+
     // 这里的 entry 参数全都是我们所定义的 EntryNode 实例
     // 通过 getTreeItem 函数，vscode 会得到 EntryNode 与 item 的一一对应的关系
     getTreeItem(entry) {
@@ -166,27 +190,38 @@ export class FileSelectorProvider {
         }
         // 如果是目录条目 ↓
 
-        // 这里的 rootUri 必然存在，
-        // 保证来自 getChildren() 的早返回：`if (!folder) return []`
-        const rootUri = getRootUri();
-        // 计算相对于工作区根目录的路径，末尾加 "/" 以匹配目录模式（如 src/time/）
-        const relativePath =
-            // 这里调用的是字符串的 slice(start) 方法，
-            // start 表示返回的子字符串的第一个字符，在原字符串中的索引位置。
-            // 由于索引是从0开始的，uri长度正好到工作区根目录后面的斜杠，
-            // 再 +1 的话，就正好从各子目录的相对路径的第一个字符开始了。
-            // 于是，整个 relativePath 就是从相对路径的第1个字符开始，
-            // 一直到结束，最后再跟上一个斜杠。完美。
-            entry.uri.path.slice(rootUri.path.length + 1) + "/";
-        const { expanded } = this.#getConfig();
-        const isExpanded = picomatch(expanded);
-        // 默认全部折叠，expand 是例外清单
+        // 如果是目录条目，查询是否处于展开状态（用户操作驱动，不再是配置驱动）
         return this.#buildTreeItem(
             entry,
-            isExpanded(relativePath)
+            this.#currentlyExpandedDirectoryUris.has(entry.uri.toString())
                 ? vscode.TreeItemCollapsibleState.Expanded
                 : vscode.TreeItemCollapsibleState.Collapsed,
         );
+
+        // ─────────────────────────────────────────
+        // 下为原始代码
+        // ─────────────────────────────────────────
+        // // 这里的 rootUri 必然存在，
+        // // 保证来自 getChildren() 的早返回：`if (!folder) return []`
+        // const rootUri = getRootUri();
+        // // 计算相对于工作区根目录的路径，末尾加 "/" 以匹配目录模式（如 src/time/）
+        // const relativePath =
+        //     // 这里调用的是字符串的 slice(start) 方法，
+        //     // start 表示返回的子字符串的第一个字符，在原字符串中的索引位置。
+        //     // 由于索引是从0开始的，uri长度正好到工作区根目录后面的斜杠，
+        //     // 再 +1 的话，就正好从各子目录的相对路径的第一个字符开始了。
+        //     // 于是，整个 relativePath 就是从相对路径的第1个字符开始，
+        //     // 一直到结束，最后再跟上一个斜杠。完美。
+        //     entry.uri.path.slice(rootUri.path.length + 1) + "/";
+        // const { expanded } = this.#getConfig();
+        // const isExpanded = picomatch(expanded);
+        // // 默认全部折叠，expand 是例外清单
+        // return this.#buildTreeItem(
+        //     entry,
+        //     isExpanded(relativePath)
+        //         ? vscode.TreeItemCollapsibleState.Expanded
+        //         : vscode.TreeItemCollapsibleState.Collapsed,
+        // );
     }
 
     // 除项目根目录外，这里传入的 entry 参数也都是我们定义的 EntryNode 实例
@@ -316,6 +351,14 @@ export class FileSelectorProvider {
 
     getCheckedUris() {
         return [...this.#checkedUris];
+    }
+
+    /**
+     * 一次性、背靠实时数据的展开目录 URI 迭代器，只在 reconcile 场景消费一次。
+     * @returns {IterableIterator<string>}
+     */
+    getOneTimeLiveIteratorOfExpandedDirectoryUri() {
+        return this.#currentlyExpandedDirectoryUris.values();
     }
 
     hasUri(uriString) {

@@ -17,6 +17,7 @@ import {
 import { bindFileSelectorProviderToReconciler } from "./utils/reconcileWithFileSystem.js";
 import { clearWorkspaceFileTreeCache } from "./workspaceFileTree/cache.js";
 import { EntryNode } from "./EntryNode.js";
+import { autoPersistExpandedDirectoryUrisOnChange } from "./utils/expandedDirectoryUris.js";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -36,9 +37,18 @@ export function activate(context) {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
     });
+    treeView.onDidExpandElement((expandEvent) => {
+        provider.recordExpandedDirectory(expandEvent.element.uri.toString());
+    });
+    treeView.onDidCollapseElement((collapseEvent) => {
+        provider.recordCollapsedDirectory(collapseEvent.element.uri.toString());
+    });
     registerTreeViewEvents(treeView, provider);
     registerFileWatcher(provider, context);
     autoPersistCheckedUrisOnChange(provider.uriSelection$);
+    autoPersistExpandedDirectoryUrisOnChange(
+        provider.expandedDirectoryUriSelection$,
+    );
     // 把 treeView 加入 context 订阅，以便在插件停用时，
     // 由 vscode 自动清理，以免造成内存溢出。
     context.subscriptions.push(

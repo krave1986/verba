@@ -13,6 +13,10 @@ export function readChildEntries(parentUriString) {
     return parentUriToChildEntriesMap.get(parentUriString);
 }
 
+export function getCachedDirectoryUris() {
+    return parentUriToChildEntriesMap.keys();
+}
+
 /**
  * 将某个目录的子条目写入缓存。
  * 只在键和值都完整准备好后调用。

@@ -35,4 +35,11 @@ export function reconcileAllCheckedUrisWithFileSystem(collectedValidUris) {
             shouldRefresh: false,
         });
     }
+
+    // 清理无效的展开 uri 记录
+    for (const uri of fileSelectorProvider.getOneTimeLiveIteratorOfExpandedDirectoryUri()) {
+        if (!collectedValidUris.has(uri)) {
+            fileSelectorProvider.recordCollapsedDirectory(uri);
+        }
+    }
 }
