@@ -1,65 +1,51 @@
-# verba README
+# Verba
 
-This is the README for your extension "verba". After writing up a brief description, we recommend including the following sections.
+_Explicit, checkbox-driven context for AI chat — you choose what the model sees._
+
+## Why Verba
+
+Most AI coding tools decide your context for you: semantic search, automatic file discovery, agents that guess what's relevant. Verba flips that around. You check the files you want in a tree view — the same tree you already use to browse your project — and that selection _is_ the context. Nothing is included that you didn't check. Nothing is guessed.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Checkbox-driven file tree** — select files and folders with checkboxes directly in a dedicated tree view. Parent/child state cascades automatically, but a manual pick you made is never silently overridden by that cascade.
+- **Snapshots** — save the current checked-file set and restore it later, either by explicitly saving one or letting Verba capture it as you work. Browse saved snapshots through a quick pick.
+- **Click-to-preview** — click any file in the tree to preview it without disturbing your checked selection.
+- **Expand state that remembers what you actually did** — folder expand/collapse state is tracked from your real clicks, not a separate rule that can fight them.
 
-For example if there is an image subfolder under your extension project workspace:
+### Coming soon
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+An integrated AI chat, `@verba`, powered by [LongCat-2.0](https://longcat.chat). Your checked files become the model's context automatically — no separate "attach file" step, no letting the model guess what's relevant. This is in active development and not yet included in this release.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+VS Code `1.104.0` or later.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-- `myExtension.enable`: Enable/disable this extension.
-- `myExtension.thing`: Set to `blah` to do something.
+| Setting         | Default                                                                                 | Description                                             |
+| --------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `verba.include` | `["**/*"]`                                                                              | Glob patterns for files to show in the file selector.   |
+| `verba.exclude` | `["**/.git/", "**/node_modules/", "**/dist/", "**/build/", "**/.vscode/", "**/*.vsix"]` | Glob patterns for files to hide from the file selector. |
+| `verba.locale`  | `""` (follows VS Code's UI language)                                                    | Locale for date/time display, e.g. `zh-CN`, `en-US`.    |
 
-## Known Issues
+## Commands & Keybindings
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+| Command                  | Keybinding    | Description                                                                                                 |
+| ------------------------ | ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Reveal Verba panel       | `Shift+Alt+V` | Open the Verba view in the activity bar.                                                                    |
+| `Verba: Save Snapshot`   | `Shift+Alt+S` | Save the current checked-file set as a snapshot.                                                            |
+| `Verba: Show Snapshots`  | `Shift+Alt+P` | Browse and restore saved snapshots.                                                                         |
+| `Verba: Extract Context` | —             | Extract the checked files — file list and file content — and copy them to the clipboard as a context block. |
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
+Initial release: checkbox-driven file tree, snapshots, expand-state persistence, click-to-preview.
 
-Initial release of ...
+## License
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-- Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-- Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+[MIT](LICENSE)

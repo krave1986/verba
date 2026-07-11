@@ -1,17 +1,32 @@
 {
     "name": "verba",
-    "displayName": "verba",
-    "description": "NDY",
+    "displayName": "Verba",
+    "publisher": "krave",
+    "description": "Explicit, checkbox-driven context for AI chat — you choose what the model sees",
     "version": "0.0.1",
     "type": "module",
     "engines": {
         "vscode": "^1.116.0"
     },
     "categories": [
-        "Other"
+        "Other",
+        "AI"
     ],
+    "icon": "assets/icon.png",
+    "license": "MIT",
     "activationEvents": [],
     "main": "./src/extension.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/krave1986/verba.git"
+    },
+    "keywords": [
+        "ai",
+        "context",
+        "llm",
+        "file-tree",
+        "prompt"
+    ],
     "contributes": {
         "configuration": {
             "title": "Verba",
@@ -117,7 +132,8 @@
     "scripts": {
         "lint": "eslint .",
         "pretest": "npm run lint",
-        "test": "vscode-test"
+        "test": "vscode-test",
+        "bundle": "node esbuild.js"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
