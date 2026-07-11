@@ -15,7 +15,7 @@
     "icon": "assets/icon.png",
     "license": "MIT",
     "activationEvents": [],
-    "main": "./src/extension.js",
+    "main": "./dist/extension.mjs",
     "repository": {
         "type": "git",
         "url": "https://github.com/krave1986/verba.git"
@@ -133,7 +133,9 @@
         "lint": "eslint .",
         "pretest": "npm run lint",
         "test": "vscode-test",
-        "bundle": "node esbuild.js"
+        "bundle": "tsdown --sourcemap",
+        "vscode:prepublish": "tsdown --minify",
+        "vscode:publish": "vsce publish"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
@@ -142,7 +144,8 @@
         "@vscode/test-electron": "^2.5.2",
         "eslint": "^9.39.4",
         "eslint-config-prettier": "^10.1.8",
-        "prettier": "^3.8.3"
+        "prettier": "^3.8.3",
+        "tsdown": "^0.22.4"
     },
     "dependencies": {
         "picomatch": "^4.0.4",
