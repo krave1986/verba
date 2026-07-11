@@ -33,7 +33,7 @@ export function activate(context) {
     synchronouslyBuildWorkspaceFileTree(true);
     const provider = new FileSelectorProvider(context);
     bindFileSelectorProviderToReconciler(provider);
-    const treeView = vscode.window.createTreeView("verba.fileSelector", {
+    const treeView = vscode.window.createTreeView("derba.fileSelector", {
         treeDataProvider: provider,
         manageCheckboxStateManually: true,
     });
@@ -54,20 +54,20 @@ export function activate(context) {
     context.subscriptions.push(
         treeView,
         ...disposableRegistry.getAll(),
-        vscode.commands.registerCommand("verba.saveSnapshot", () =>
+        vscode.commands.registerCommand("derba.saveSnapshot", () =>
             saveSnapshot(context, provider),
         ),
-        vscode.commands.registerCommand("verba.showSnapshotPicker", () =>
+        vscode.commands.registerCommand("derba.showSnapshotPicker", () =>
             showSnapshotPicker(context, provider),
         ),
-        vscode.commands.registerCommand("verba.extractContext", () => {
+        vscode.commands.registerCommand("derba.extractContext", () => {
             extractContext(provider);
         }),
 
         vscode.workspace.onDidChangeConfiguration((configChangeEvent) => {
             if (
-                configChangeEvent.affectsConfiguration("verba.include") ||
-                configChangeEvent.affectsConfiguration("verba.exclude")
+                configChangeEvent.affectsConfiguration("derba.include") ||
+                configChangeEvent.affectsConfiguration("derba.exclude")
             ) {
                 clearWorkspaceFileTreeCache();
                 void synchronouslyBuildWorkspaceFileTree(true);
@@ -79,7 +79,7 @@ export function activate(context) {
     if (context.extensionMode === vscode.ExtensionMode.Development) {
         context.subscriptions.push(
             vscode.commands.registerCommand(
-                "verba.temporaryDebug",
+                "derba.temporaryDebug",
                 async () => {
                     const testUri = vscode.Uri.parse(
                         "file:///d%3A/vscode-extensions/test-projects/parent_one/branch_one/branch.js",

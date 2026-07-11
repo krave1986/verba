@@ -22,7 +22,7 @@ export function reconcileAllCheckedUrisWithFileSystem(collectedValidUris) {
         }
     });
     if (snapshotsChanged) {
-        workspaceStore.update("verba.snapshots", snapshots);
+        workspaceStore.update("derba.snapshots", snapshots);
     }
 
     // ── provider：过滤当前内存中的勾选集合 ──

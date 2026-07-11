@@ -5,11 +5,11 @@ import { workspaceStore } from "../../utils/workspace.js";
 const MAX_SNAPSHOTS = 4;
 
 export function loadSnapshots() {
-    return workspaceStore.get("verba.snapshots") ?? [[], []];
+    return workspaceStore.get("derba.snapshots") ?? [[], []];
 }
 
 function saveSnapshots(snapshots) {
-    workspaceStore.update("verba.snapshots", snapshots);
+    workspaceStore.update("derba.snapshots", snapshots);
 }
 
 export async function saveSnapshot(context, provider) {
@@ -201,7 +201,7 @@ export function showSnapshotPicker(context, provider) {
 
 function initDateTimeFormatter() {
     const locale =
-        vscode.workspace.getConfiguration("verba").get("locale") ||
+        vscode.workspace.getConfiguration("derba").get("locale") ||
         vscode.env.language;
     const dateTimeFormatter = new Intl.DateTimeFormat(locale, {
         month: "long",

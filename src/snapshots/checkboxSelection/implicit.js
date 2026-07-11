@@ -3,7 +3,7 @@ import { debounceTime } from "rxjs";
 import { disposableRegistry } from "../../utils/toVscodeDisposable.js";
 
 export function loadLastCheckedUris() {
-    return workspaceStore.get("verba.lastCheckedUris") ?? [];
+    return workspaceStore.get("derba.lastCheckedUris") ?? [];
 }
 
 /**
@@ -16,7 +16,7 @@ export function autoPersistCheckedUrisOnChange(changes$) {
     const subscription = changes$
         .pipe(debounceTime(200))
         .subscribe((checkedUris) => {
-            workspaceStore.update("verba.lastCheckedUris", checkedUris);
+            workspaceStore.update("derba.lastCheckedUris", checkedUris);
         });
 
     disposableRegistry.register(subscription);

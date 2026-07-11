@@ -1,6 +1,6 @@
 {
-    "name": "verba",
-    "displayName": "Verba",
+    "name": "derba",
+    "displayName": "Derba",
     "publisher": "krave",
     "description": "Explicit, checkbox-driven context for AI chat — you choose what the model sees",
     "version": "0.0.1",
@@ -18,7 +18,7 @@
     "main": "./dist/extension.mjs",
     "repository": {
         "type": "git",
-        "url": "https://github.com/krave1986/verba.git"
+        "url": "https://github.com/krave1986/derba.git"
     },
     "keywords": [
         "ai",
@@ -29,9 +29,9 @@
     ],
     "contributes": {
         "configuration": {
-            "title": "Verba",
+            "title": "Derba",
             "properties": {
-                "verba.include": {
+                "derba.include": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -41,7 +41,7 @@
                     ],
                     "description": "Glob patterns for files to show in the file selector."
                 },
-                "verba.exclude": {
+                "derba.exclude": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -56,7 +56,7 @@
                     ],
                     "description": "Glob patterns for files to hide from the file selector."
                 },
-                "verba.locale": {
+                "derba.locale": {
                     "type": "string",
                     "default": "",
                     "markdownDescription": "Locale for date/time display. Leave empty to follow VS Code UI language.",
@@ -72,9 +72,9 @@
             }
         },
         "views": {
-            "verba-panel": [
+            "derba-panel": [
                 {
-                    "id": "verba.fileSelector",
+                    "id": "derba.fileSelector",
                     "name": "File Selector",
                     "type": "tree",
                     "icon": "assets/panel-icon.svg"
@@ -84,46 +84,46 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "verba-panel",
-                    "title": "Verba",
+                    "id": "derba-panel",
+                    "title": "Derba",
                     "icon": "assets/panel-icon.svg"
                 }
             ]
         },
         "commands": [
             {
-                "command": "verba.temporaryDebug",
-                "title": "Verba: Temporary Debug",
+                "command": "derba.temporaryDebug",
+                "title": "Derba: Temporary Debug",
                 "enablement": "isDevelopment"
             },
             {
-                "command": "verba.saveSnapshot",
-                "title": "Verba: Save Snapshot"
+                "command": "derba.saveSnapshot",
+                "title": "Derba: Save Snapshot"
             },
             {
-                "command": "verba.showSnapshotPicker",
-                "title": "Verba: Show Snapshots"
+                "command": "derba.showSnapshotPicker",
+                "title": "Derba: Show Snapshots"
             },
             {
-                "command": "verba.extractContext",
-                "title": "Verba: Extract Context"
+                "command": "derba.extractContext",
+                "title": "Derba: Extract Context"
             }
         ],
         "keybindings": [
             {
-                "command": "workbench.view.extension.verba-panel",
+                "command": "workbench.view.extension.derba-panel",
                 "key": "shift+alt+v"
             },
             {
-                "command": "verba.saveSnapshot",
+                "command": "derba.saveSnapshot",
                 "key": "shift+alt+s"
             },
             {
-                "command": "verba.showSnapshotPicker",
+                "command": "derba.showSnapshotPicker",
                 "key": "shift+alt+p"
             },
             {
-                "command": "verba.temporaryDebug",
+                "command": "derba.temporaryDebug",
                 "key": "shift+alt+d",
                 "when": "isDevelopment"
             }

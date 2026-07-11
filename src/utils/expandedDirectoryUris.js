@@ -3,7 +3,7 @@ import { disposableRegistry } from "./toVscodeDisposable.js";
 import { workspaceStore } from "./workspace.js";
 
 export function loadLastExpandedDirectoryUris() {
-    return workspaceStore.get("verba.lastExpandedDirectoryUris") ?? [];
+    return workspaceStore.get("derba.lastExpandedDirectoryUris") ?? [];
 }
 
 export function autoPersistExpandedDirectoryUrisOnChange(changes$) {
@@ -11,7 +11,7 @@ export function autoPersistExpandedDirectoryUrisOnChange(changes$) {
         .pipe(debounceTime(200))
         .subscribe((expandedUris) => {
             workspaceStore.update(
-                "verba.lastExpandedDirectoryUris",
+                "derba.lastExpandedDirectoryUris",
                 expandedUris,
             );
         });

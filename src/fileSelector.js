@@ -78,19 +78,19 @@ export class FileSelectorProvider {
                 }),
         );
     }
-    // 获取针对 Verba 的用户设置
+    // 获取针对 Derba 的用户设置
     // include: 作为首要白名单逻辑，先明确哪些文件需要展示
     // exclude: 作为次要黑名单逻辑，表示：需要在白名单的基础上，从白名单中排除哪些文件
     // collapse: 在确定最终需要包含哪些文件的基础上，再确定哪些目录是需要默认展开的
     #getConfig() {
-        const config = vscode.workspace.getConfiguration("verba");
+        const config = vscode.workspace.getConfiguration("derba");
         const warnAndFilterAbsolutePaths = (patterns, settingName) => {
             const relativePathGlobPatterns = patterns.filter(
                 (globPattern) => !isAbsolute(globPattern),
             );
             if (relativePathGlobPatterns.length !== patterns.length) {
                 vscode.window.showWarningMessage(
-                    `Verba: Absolute path detected in \`${settingName}\` — only workspace-relative glob patterns are supported (e.g. \`src/**\`). The affected rules have been ignored.`,
+                    `Derba: Absolute path detected in \`${settingName}\` — only workspace-relative glob patterns are supported (e.g. \`src/**\`). The affected rules have been ignored.`,
                 );
             }
             return relativePathGlobPatterns;
@@ -106,13 +106,13 @@ export class FileSelectorProvider {
             included: prefixWithGlobstar(
                 warnAndFilterAbsolutePaths(
                     config.get("include"),
-                    "verba.include",
+                    "derba.include",
                 ),
             ),
             excluded: prefixWithGlobstar(
                 warnAndFilterAbsolutePaths(
                     config.get("exclude"),
-                    "verba.exclude",
+                    "derba.exclude",
                 ),
             ),
         };
