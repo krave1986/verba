@@ -135,13 +135,17 @@
         "test": "vscode-test",
         "bundle": "tsdown --sourcemap",
         "vscode:prepublish": "tsdown --minify",
-        "vscode:publish": "vsce publish"
+        "vscode:publish": "vsce publish",
+        "vscode:publish:patch": "vsce publish patch",
+        "vscode:publish:minor": "vsce publish minor",
+        "vscode:publish:major": "vsce publish major"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
         "@types/node": "22.x",
         "@types/vscode": "^1.116.0",
         "@vscode/test-electron": "^2.5.2",
+        "@vscode/vsce": "^3.9.2",
         "eslint": "^9.39.4",
         "eslint-config-prettier": "^10.1.8",
         "prettier": "^3.8.3",
@@ -150,5 +154,9 @@
     "dependencies": {
         "picomatch": "^4.0.4",
         "rxjs": "^7.8.2"
+    },
+    "allowScripts": {
+        "@vscode/vsce-sign@2.0.9": true,
+        "keytar@7.9.0": true
     }
 }
